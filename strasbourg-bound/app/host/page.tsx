@@ -76,26 +76,23 @@ export default function HostPage() {
     setLoading(false)
   }
 
-  function computeAwardWinners() {
+function computeAwardWinners() {
     const winners: Record<string, string> = {}
     AWARDS.forEach((award, aIdx) => {
-      const winCounts: Record<string, number> = {}
-      TEAM.forEach(n => { winCounts[n] = 0 })
+      const totalVotes: Record<string, number> = {}
+      TEAM.forEach(n => { totalVotes[n] = 0 })
       award.questions.forEach((_, qIdx) => {
         const globalIdx = aIdx * 4 + qIdx
         const qVotes = votes.filter((v: any) => v.question_idx === globalIdx)
-        const tally: Record<string, number> = {}
-        TEAM.forEach(n => { tally[n] = 0 })
-        qVotes.forEach((v: any) => { if (tally[v.voted_for] !== undefined) tally[v.voted_for]++ })
-        const topCount = Math.max(...Object.values(tally))
-        if (topCount > 0) {
-          const topName = Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]
-          winCounts[topName]++
-        }
+        qVotes.forEach((v: any) => {
+          if (totalVotes[v.voted_for] !== undefined) totalVotes[v.voted_for]++
+        })
       })
-      winners[award.id] = Object.entries(winCounts).sort((a, b) => b[1] - a[1])[0][0]
+      const sorted = Object.entries(totalVotes).sort((a, b) => b[1] - a[1])
+      winners[award.id] = sorted[0][0]
     })
     return winners
+  }
   }
 
   if (!roomCode) return (
