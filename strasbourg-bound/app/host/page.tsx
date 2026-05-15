@@ -75,6 +75,8 @@ export default function HostPage() {
 
   function computeAwardWinners() {
     const winners: Record<string, string> = {}
+    const alreadyWon = new Set<string>()
+
     AWARDS.forEach((award, aIdx) => {
       const totalVotes: Record<string, number> = {}
       TEAM.forEach(n => { totalVotes[n] = 0 })
@@ -85,8 +87,13 @@ export default function HostPage() {
           if (totalVotes[v.voted_for] !== undefined) totalVotes[v.voted_for]++
         })
       })
-      const sorted = Object.entries(totalVotes).sort((a, b) => b[1] - a[1])
-      winners[award.id] = sorted[0][0]
+      // Sort by votes, skip anyone who already won an award
+      const sorted = Object.entries(totalVotes)
+        .sort((a, b) => b[1] - a[1])
+        .filter(([name]) => !alreadyWon.has(name))
+      const winner = sorted[0]?.[1] > 0 ? sorted[0][0] : sorted[0]?.[0] ?? '?'
+      winners[award.id] = winner
+      alreadyWon.add(winner)
     })
     return winners
   }
